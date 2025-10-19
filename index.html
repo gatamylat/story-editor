@@ -999,14 +999,277 @@
 // === ОБРАБОТЧИКИ ПРЕСЕТОВ (уже есть в коде) ===
 // Этот блок уже добавлен, пропускаем
 
-// === ОБРАБОТЧИКИ ВСПОМОГАТЕЛЬНЫХ ЛИНИЙ (уже есть в коде) ===  
-// Этот блок уже добавлен, пропускаем
+// === ОБРАБОТЧИКИ ВСПОМОГАТЕЛЬНЫХ ЛИНИЙ ===
+document.getElementById('showCenterLines').addEventListener('change', e => {
+  showCenterLines = e.target.checked;
+  redrawCanvas();
+});
 
-// === ОБРАБОТЧИКИ ГРАДИЕНТОВ (уже есть в коде) ===
-// Этот блок уже добавлен, пропускаем
+document.getElementById('showSafeZones').addEventListener('change', e => {
+  showSafeZones = e.target.checked;
+  redrawCanvas();
+});
 
-// === ФУНКЦИИ ИСТОРИИ (уже есть в коде) ===
-// Этот блок уже добавлен, пропускаем
+document.getElementById('safeZoneTop').addEventListener('input', e => {
+  safeZoneTop = parseInt(e.target.value);
+  document.getElementById('safeZoneTopValue').textContent = safeZoneTop + 'px';
+  if (showSafeZones) redrawCanvas();
+});
+
+document.getElementById('safeZoneBottom').addEventListener('input', e => {
+  safeZoneBottom = parseInt(e.target.value);
+  document.getElementById('safeZoneBottomValue').textContent = safeZoneBottom + 'px';
+  if (showSafeZones) redrawCanvas();
+});
+
+// === ОБРАБОТЧИКИ ГРАДИЕНТОВ ===
+document.getElementById('addTopGradientBtn').addEventListener('click', () => {
+  if (!topGradientBlock) {
+    pushStateToUndo();
+    topGradientBlock = {
+      id: nextBlockId++,
+      type: 'gradient',
+      gradientType: 'top',
+      height: 300,
+      opacity: 0.5,
+      zIndex: blocks.length + 1
+    };
+    blocks.push(topGradientBlock);
+    document.getElementById('topGradientControls').style.display = 'block';
+    document.getElementById('addTopGradientBtn').style.display = 'none';
+    refreshBlockList();
+    redrawCanvas();
+  }
+});
+
+document.getElementById('addBottomGradientBtn').addEventListener('click', () => {
+  if (!bottomGradientBlock) {
+    pushStateToUndo();
+    bottomGradientBlock = {
+      id: nextBlockId++,
+      type: 'gradient',
+      gradientType: 'bottom',
+      height: 300,
+      opacity: 0.5,
+      zIndex: blocks.length + 1
+    };
+    blocks.push(bottomGradientBlock);
+    document.getElementById('bottomGradientControls').style.display = 'block';
+    document.getElementById('addBottomGradientBtn').style.display = 'none';
+    refreshBlockList();
+    redrawCanvas();
+  }
+});
+
+document.getElementById('removeTopGradientBtn').addEventListener('click', () => {
+  if (topGradientBlock) {
+    pushStateToUndo();
+    blocks = blocks.filter(b => b.id !== topGradientBlock.id);
+    topGradientBlock = null;
+    document.getElementById('topGradientControls').style.display = 'none';
+    document.getElementById('addTopGradientBtn').style.display = 'block';
+    refreshBlockList();
+    redrawCanvas();
+  }
+});
+
+document.getElementById('removeBottomGradientBtn').addEventListener('click', () => {
+  if (bottomGradientBlock) {
+    pushStateToUndo();
+    blocks = blocks.filter(b => b.id !== bottomGradientBlock.id);
+    bottomGradientBlock = null;
+    document.getElementById('bottomGradientControls').style.display = 'none';
+    document.getElementById('addBottomGradientBtn').style.display = 'block';
+    refreshBlockList();
+    redrawCanvas();
+  }
+});
+
+document.getElementById('topGradientHeight').addEventListener('input', e => {
+  if (topGradientBlock) {
+    topGradientBlock.height = parseInt(e.target.value);
+    document.getElementById('topGradientHeightValue').textContent = topGradientBlock.height + 'px';
+    redrawCanvas();
+  }
+});
+
+document.getElementById('topGradientOpacity').addEventListener('input', e => {
+  if (topGradientBlock) {
+    topGradientBlock.opacity = parseInt(e.target.value) / 100;
+    document.getElementById('topGradientOpacityValue').textContent = e.target.value + '%';
+    redrawCanvas();
+  }
+});
+
+document.getElementById('bottomGradientHeight').addEventListener('input', e => {
+  if (bottomGradientBlock) {
+    bottomGradientBlock.height = parseInt(e.target.value);
+    document.getElementById('bottomGradientHeightValue').textContent = bottomGradientBlock.height + 'px';
+    redrawCanvas();
+  }
+});
+
+document.getElementById('bottomGradientOpacity').addEventListener('input', e => {
+  if (bottomGradientBlock) {
+    bottomGradientBlock.opacity = parseInt(e.target.value) / 100;
+    document.getElementById('bottomGradientOpacityValue').textContent = e.target.value + '%';
+    redrawCanvas();
+  }
+});
+
+document.getElementById('topGradientUp').addEventListener('click', () => {
+  if (topGradientBlock) {
+    pushStateToUndo();
+    topGradientBlock.zIndex = Math.max(...blocks.map(x => x.zIndex)) + 1;
+    redrawCanvas();
+  }
+});
+
+document.getElementById('topGradientDown').addEventListener('click', () => {
+  if (topGradientBlock) {
+    pushStateToUndo();
+    topGradientBlock.zIndex = Math.min(...blocks.map(x => x.zIndex)) - 1;
+    redrawCanvas();
+  }
+});
+
+document.getElementById('bottomGradientUp').addEventListener('click', () => {
+  if (bottomGradientBlock) {
+    pushStateToUndo();
+    bottomGradientBlock.zIndex = Math.max(...blocks.map(x => x.zIndex)) + 1;
+    redrawCanvas();
+  }
+});
+
+document.getElementById('bottomGradientDown').addEventListener('click', () => {
+  if (bottomGradientBlock) {
+    pushStateToUndo();
+    bottomGradientBlock.zIndex = Math.min(...blocks.map(x => x.zIndex)) - 1;
+    redrawCanvas();
+  }
+});
+
+// === ФУНКЦИИ ИСТОРИИ ===
+function pushStateToUndo() {
+  const state = {
+    blocks: JSON.parse(JSON.stringify(blocks, (key, value) => {
+      if (value && value instanceof Image) return { __img__: true, src: value.src };
+      return value;
+    })),
+    bgLoaded, bgX, bgY, bgW, bgH, canvasWidth, canvasHeight, bgSrc: bgLoaded ? bgImage.src : null
+  };
+  undoStack.push(state);
+  if (undoStack.length > maxHistory) undoStack.shift();
+  redoStack = [];
+  updateUndoRedoButtons();
+}
+
+function restoreState(state) {
+  blocks = state.blocks.map(b => {
+    if (b.type === 'image') {
+      const img = new Image();
+      img.src = b.img.src;
+      return { ...b, img };
+    }
+    return { ...b };
+  });
+  
+  // Восстанавливаем ссылки на градиентные блоки
+  topGradientBlock = blocks.find(b => b.type === 'gradient' && b.gradientType === 'top') || null;
+  bottomGradientBlock = blocks.find(b => b.type === 'gradient' && b.gradientType === 'bottom') || null;
+  
+  // Обновляем UI для градиентов
+  if (topGradientBlock) {
+    document.getElementById('topGradientControls').style.display = 'block';
+    document.getElementById('addTopGradientBtn').style.display = 'none';
+    document.getElementById('topGradientHeight').value = topGradientBlock.height;
+    document.getElementById('topGradientHeightValue').textContent = topGradientBlock.height + 'px';
+    document.getElementById('topGradientOpacity').value = topGradientBlock.opacity * 100;
+    document.getElementById('topGradientOpacityValue').textContent = (topGradientBlock.opacity * 100) + '%';
+  } else {
+    document.getElementById('topGradientControls').style.display = 'none';
+    document.getElementById('addTopGradientBtn').style.display = 'block';
+  }
+  
+  if (bottomGradientBlock) {
+    document.getElementById('bottomGradientControls').style.display = 'block';
+    document.getElementById('addBottomGradientBtn').style.display = 'none';
+    document.getElementById('bottomGradientHeight').value = bottomGradientBlock.height;
+    document.getElementById('bottomGradientHeightValue').textContent = bottomGradientBlock.height + 'px';
+    document.getElementById('bottomGradientOpacity').value = bottomGradientBlock.opacity * 100;
+    document.getElementById('bottomGradientOpacityValue').textContent = (bottomGradientBlock.opacity * 100) + '%';
+  } else {
+    document.getElementById('bottomGradientControls').style.display = 'none';
+    document.getElementById('addBottomGradientBtn').style.display = 'block';
+  }
+  
+  if (state.bgLoaded && state.bgSrc) {
+    bgImage.src = state.bgSrc;
+    bgImage.onload = () => {
+      bgLoaded = true;
+      bgX = state.bgX;
+      bgY = state.bgY;
+      bgW = state.bgW;
+      bgH = state.bgH;
+      redrawCanvas();
+    };
+  } else {
+    bgLoaded = false;
+    bgX = state.bgX;
+    bgY = state.bgY;
+    bgW = state.bgW;
+    bgH = state.bgH;
+  }
+  
+  canvasWidth = state.canvasWidth;
+  canvasHeight = state.canvasHeight;
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+  document.getElementById('canvasWidth').value = canvasWidth;
+  document.getElementById('canvasHeight').value = canvasHeight;
+  selectedBlockId = null;
+  deactivateBlockSelection();
+  refreshBlockList();
+  redrawCanvas();
+}
+
+function undo() {
+  if (!undoStack.length) return;
+  const currentState = {
+    blocks: JSON.parse(JSON.stringify(blocks, (key, value) => {
+      if (value && value instanceof Image) return { __img__: true, src: value.src };
+      return value;
+    })),
+    bgLoaded, bgX, bgY, bgW, bgH, canvasWidth, canvasHeight, bgSrc: bgLoaded ? bgImage.src : null
+  };
+  redoStack.push(currentState);
+  const prevState = undoStack.pop();
+  restoreState(prevState);
+  updateUndoRedoButtons();
+}
+
+function redo() {
+  if (!redoStack.length) return;
+  const currentState = {
+    blocks: JSON.parse(JSON.stringify(blocks, (key, value) => {
+      if (value && value instanceof Image) return { __img__: true, src: value.src };
+      return value;
+    })),
+    bgLoaded, bgX, bgY, bgW, bgH, canvasWidth, canvasHeight, bgSrc: bgLoaded ? bgImage.src : null
+  };
+  undoStack.push(currentState);
+  const nextState = redoStack.pop();
+  restoreState(nextState);
+  updateUndoRedoButtons();
+}
+
+function updateUndoRedoButtons() {
+  document.getElementById('undoBtn').disabled = !undoStack.length;
+  document.getElementById('redoBtn').disabled = !redoStack.length;
+}
+
+document.getElementById('undoBtn').addEventListener('click', undo);
+document.getElementById('redoBtn').addEventListener('click', redo);
 
 // === ФУНКЦИИ ОТРИСОВКИ ===
 function getBlockById(id) { 
@@ -2141,4 +2404,5 @@ document.getElementById('zoomReset').addEventListener('click', () => {
 </script>
 
 </body>
+
 </html>
