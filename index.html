@@ -849,7 +849,7 @@
 
   // === SERVICE WORKER ДЛЯ PWA ===
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js')
+    navigator.serviceWorker.register('./sw.js')
       .then(reg => console.log('Service Worker зарегистрирован'))
       .catch(err => console.log('Service Worker не зарегистрирован:', err));
   }
@@ -2422,4 +2422,5 @@ document.getElementById('zoomReset').addEventListener('click', () => {
 </body>
 
 </html>
+
 
