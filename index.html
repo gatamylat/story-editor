@@ -996,8 +996,24 @@
 // === ФУНКЦИИ УПРАВЛЕНИЯ МАСШТАБОМ (уже есть в коде) ===
 // Этот блок уже добавлен, пропускаем
 
-// === ОБРАБОТЧИКИ ПРЕСЕТОВ (уже есть в коде) ===
-// Этот блок уже добавлен, пропускаем
+// === ОБРАБОТЧИКИ ПРЕСЕТОВ ===
+document.getElementById('preset9x16').addEventListener('click', () => {
+  document.getElementById('canvasWidth').value = 1080;
+  document.getElementById('canvasHeight').value = 1920;
+  document.getElementById('resizeCanvasBtn').click();
+});
+
+document.getElementById('preset1x1').addEventListener('click', () => {
+  document.getElementById('canvasWidth').value = 1080;
+  document.getElementById('canvasHeight').value = 1080;
+  document.getElementById('resizeCanvasBtn').click();
+});
+
+document.getElementById('preset16x9').addEventListener('click', () => {
+  document.getElementById('canvasWidth').value = 1920;
+  document.getElementById('canvasHeight').value = 1080;
+  document.getElementById('resizeCanvasBtn').click();
+});
 
 // === ОБРАБОТЧИКИ ВСПОМОГАТЕЛЬНЫХ ЛИНИЙ ===
 document.getElementById('showCenterLines').addEventListener('change', e => {
@@ -2406,3 +2422,4 @@ document.getElementById('zoomReset').addEventListener('click', () => {
 </body>
 
 </html>
+
