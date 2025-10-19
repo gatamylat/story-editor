@@ -1,23 +1,23 @@
 // Service Worker для Story Editor Pro
 const CACHE_NAME = 'story-editor-v2.0';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-16.png',
-  '/icons/icon-32.png',
-  '/icons/icon-72.png',
-  '/icons/icon-96.png',
-  '/icons/icon-128.png',
-  '/icons/icon-144.png',
-  '/icons/icon-152.png',
-  '/icons/icon-167.png',
-  '/icons/icon-180.png',
-  '/icons/icon-192.png',
-  '/icons/icon-256.png',
-  '/icons/icon-384.png',
-  '/icons/icon-512.png',
-  '/icons/icon-1024.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './icons/icon-16.png',
+  './icons/icon-32.png',
+  './icons/icon-72.png',
+  './icons/icon-96.png',
+  './icons/icon-128.png',
+  './icons/icon-144.png',
+  './icons/icon-152.png',
+  './icons/icon-167.png',
+  './icons/icon-180.png',
+  './icons/icon-192.png',
+  './icons/icon-256.png',
+  './icons/icon-384.png',
+  './icons/icon-512.png',
+  './icons/icon-1024.png'
 ];
 
 // Установка Service Worker
@@ -101,8 +101,8 @@ self.addEventListener('fetch', event => {
 self.addEventListener('push', event => {
   const options = {
     body: event.data ? event.data.text() : 'Новое уведомление',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-72.png',
+    icon: './icons/icon-192.png',
+badge: './icons/icon-72.png',
     vibrate: [200, 100, 200],
     data: {
       dateOfArrival: Date.now(),
@@ -119,7 +119,7 @@ self.addEventListener('push', event => {
 self.addEventListener('notificationclick', event => {
   event.notification.close();
   event.waitUntil(
-    clients.openWindow('/')
+    clients.openWindow('./')
   );
 });
 
@@ -133,4 +133,5 @@ self.addEventListener('sync', event => {
 async function syncProjects() {
   // Здесь можно добавить синхронизацию с сервером
   console.log('Синхронизация проектов...');
+
 }
