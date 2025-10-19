@@ -2570,55 +2570,6 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
   redrawCanvas();
 }
 
-document.getElementById('copyBtn').addEventListener('click', async () => {
-  try {
-    const tempCanvas = document.createElement('canvas');
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCanvas.width = canvasWidth;
-    tempCanvas.height = canvasHeight;
-    
-    const savedCenterLines = showCenterLines;
-    const savedSafeZones = showSafeZones;
-    const savedCanvas = canvas;
-    const savedCtx = ctx;
-    
-    canvas = tempCanvas;
-    ctx = tempCtx;
-    
-    showCenterLines = false;
-    showSafeZones = false;
-    redrawCanvas(true);
-    
-    // Проверка поддержки Clipboard API
-    if (navigator.clipboard && window.ClipboardItem) {
-      tempCanvas.toBlob(async (blob) => {
-        try {
-          const item = new ClipboardItem({ 'image/png': blob });
-          await navigator.clipboard.write([item]);
-          showCopySuccess();
-        } catch(e) {
-          // Fallback для iOS
-          fallbackCopyToClipboard(tempCanvas);
-        }
-      });
-    } else {
-      // Fallback для старых браузеров и iOS Safari
-      fallbackCopyToClipboard(tempCanvas);
-    }
-    
-    canvas = savedCanvas;
-    ctx = savedCtx;
-    showCenterLines = savedCenterLines;
-    showSafeZones = savedSafeZones;
-    redrawCanvas();
-  } catch(err) {
-    console.error('Ошибка копирования:', err);
-    alert('На iOS копирование работает через долгое нажатие на изображение после его создания');
-    // Показываем изображение для ручного копирования
-    showImageForManualCopy();
-  }
-});
-
 function showCopySuccess() {
   const btn = document.getElementById('copyBtn');
   const originalText = btn.textContent;
@@ -2846,6 +2797,7 @@ window.addEventListener('resize', () => {
 </body>
 
 </html>
+
 
 
 
