@@ -875,8 +875,8 @@
 
 <script>
   // === ИНИЦИАЛИЗАЦИЯ ===
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
+  let canvas = document.getElementById('canvas');
+  let ctx = canvas.getContext('2d');
   let canvasWidth = parseInt(document.getElementById('canvasWidth').value);
   let canvasHeight = parseInt(document.getElementById('canvasHeight').value);
   canvas.width = canvasWidth;
@@ -2846,6 +2846,7 @@ window.addEventListener('resize', () => {
 </body>
 
 </html>
+
 
 
 
