@@ -71,6 +71,11 @@
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
       -webkit-touch-callout: none;
+      /* Разрешаем контекстное меню для модальных изображений */
+.modal-image {
+  -webkit-touch-callout: default !important;
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
     }
     
     :root {
@@ -834,6 +839,7 @@
       <div class="section-content">
         <button id="downloadBtn" class="success">🖼️ Скачать PNG</button>
         <button id="copyBtn">📋 Копировать в буфер</button>
+        <button id="shareBtn">📤 Поделиться</button>
       </div>
     </details>
 
@@ -2525,14 +2531,18 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
       instruction.innerHTML = 'Нажмите и удерживайте изображение,<br>затем выберите "Сохранить изображение"';
       
       const img = document.createElement('img');
-      img.src = url;
-      img.style.cssText = `
-        max-width: 90%;
-        max-height: 60vh;
-        border: 2px solid white;
-        border-radius: 8px;
-        margin: 20px;
-      `;
+img.src = url;
+img.className = 'modal-image'; // Добавляем класс
+img.style.cssText = `
+  max-width: 90%;
+  max-height: 60vh;
+  border: 2px solid white;
+  border-radius: 8px;
+  margin: 20px;
+  -webkit-touch-callout: default !important;
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
+`;
       
       const closeBtn = document.createElement('button');
       closeBtn.textContent = 'Закрыть';
@@ -2658,13 +2668,17 @@ function fallbackCopyToClipboard(canvas) {
   instruction.innerHTML = 'Нажмите и удерживайте изображение,<br>затем выберите "Скопировать"';
   
   const img = document.createElement('img');
-  img.src = canvas.toDataURL('image/png');
-  img.style.cssText = `
-    max-width: 90%;
-    max-height: 70vh;
-    border: 2px solid white;
-    border-radius: 8px;
-  `;
+img.src = canvas.toDataURL('image/png');
+img.className = 'modal-image'; // Добавляем класс
+img.style.cssText = `
+  max-width: 90%;
+  max-height: 70vh;
+  border: 2px solid white;
+  border-radius: 8px;
+  -webkit-touch-callout: default !important;
+  -webkit-user-select: auto !important;
+  user-select: auto !important;
+`;
   
   const closeBtn = document.createElement('button');
   closeBtn.textContent = 'Закрыть';
@@ -2840,12 +2854,102 @@ window.addEventListener('resize', () => {
     sidebar.style.overflow = '';
   }
 });
+  // === ФУНКЦИЯ ПОДЕЛИТЬСЯ (Web Share API) ===
+document.getElementById('shareBtn').addEventListener('click', async () => {
+  // Проверяем поддержку Web Share API
+  if (!navigator.share) {
+    alert('Функция "Поделиться" не поддерживается в вашем браузере');
+    return;
+  }
   
+  try {
+    // Создаем временный canvas без вспомогательных линий
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCanvas.width = canvasWidth;
+    tempCanvas.height = canvasHeight;
+    
+    // Сохраняем текущее состояние
+    const savedCenterLines = showCenterLines;
+    const savedSafeZones = showSafeZones;
+    const savedCanvas = canvas;
+    const savedCtx = ctx;
+    
+    // Временно переключаемся на новый canvas
+    canvas = tempCanvas;
+    ctx = tempCtx;
+    
+    // Отрисовываем без вспомогательных линий
+    showCenterLines = false;
+    showSafeZones = false;
+    redrawCanvas(true);
+    
+    // Создаем blob из canvas
+    tempCanvas.toBlob(async (blob) => {
+      try {
+        // Создаем файл из blob
+        const file = new File([blob], 'story.png', { type: 'image/png' });
+        
+        // Проверяем, можем ли поделиться файлами
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: 'Story Editor',
+            text: 'Изображение из Story Editor Pro'
+          });
+        } else {
+          // Если не можем поделиться файлом, делимся как URL
+          const url = tempCanvas.toDataURL('image/png');
+          await navigator.share({
+            title: 'Story Editor',
+            text: 'Изображение из Story Editor Pro',
+            url: url
+          });
+        }
+        
+        // Показываем успех
+        const btn = document.getElementById('shareBtn');
+        const originalText = btn.textContent;
+        btn.textContent = '✔ Отправлено!';
+        btn.style.background = 'var(--success)';
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.background = '';
+        }, 2000);
+        
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error('Ошибка при попытке поделиться:', err);
+        }
+      }
+    });
+    
+    // Восстанавливаем исходное состояние
+    canvas = savedCanvas;
+    ctx = savedCtx;
+    showCenterLines = savedCenterLines;
+    showSafeZones = savedSafeZones;
+    redrawCanvas();
+    
+  } catch (err) {
+    console.error('Ошибка создания изображения:', err);
+    alert('Произошла ошибка при создании изображения');
+  }
+});
+
+// Показываем кнопку "Поделиться" только если API поддерживается
+window.addEventListener('load', () => {
+  const shareBtn = document.getElementById('shareBtn');
+  if (!navigator.share) {
+    shareBtn.style.display = 'none';
+  }
+});
 </script>
 
 </body>
 
 </html>
+
 
 
 
